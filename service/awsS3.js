@@ -1,7 +1,8 @@
 const multer = require('multer');
+const upload = multer({storage: multer.memoryStorage()});
+
 const AWS = require('aws-sdk');
 const md5 = require('md5');
-const upload = multer({storage: multer.memoryStorage()});
 const awsConfig = require('../awsconfig.json');
 
 const s3 = new AWS.S3({
@@ -13,8 +14,10 @@ const s3 = new AWS.S3({
 
 exports.upload = async function(req, res) {
     const uploads = upload.single('img');
+    if (!req.file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF)$/)) {
+        return new Error('Only image files are allowed!');
+    }
     uploads(req, res, async function (err) {
-
         console.log(req.files);
         const md5FileData = md5(req.file.buffer);
         const [fileName, fileDataType] = req.file.originalname.split('.');
